@@ -12,6 +12,7 @@ Iimg=Cimg=Pimg = 0 #image variables Import
 #Cimg is a copy of the imported image and is in the formate of Pillow
 #Pimg is a copy of the Copied image and is in the format of TKinter
 IPWindow = IPFrame = 0 #Image preview window
+SWindow = 0
 pReview = 0 #Variable to tell if the window is open or not, prob dont need it and can check through seeing if IPWindow is not equal to 0
 rotationAngle = 0
 Image_Activated = False
@@ -37,10 +38,41 @@ def import_file(): #imports an image of the users choosing, to be edited.
     Cimg.convert('RGBA')
     BuildPreviewWindow()
     
-def ask_to_save():
-    global IPWindow, Image_Activated
-    IPWindow.destroy()
+def reset_edits():
+    global rotationAngle, hIstory, Image_Activated
     Image_Activated = False
+    rotationAngle = 0
+    hIstory = []
+
+def ask_to_save():
+    global IPWindow, Image_Activated,SWindow
+    SWindow = tk.Toplevel(root, height=200, width=400)
+    Build_Save_Window()
+    SWindow.focus_force()
+    SWindow.transient(root)
+    SWindow.grab_set()
+    SWindow.wait_window(window=SWindow)
+    Image_Activated = False
+    
+def Save_Image():
+    global Cimg, SWindow, IPWindow, Iimg
+    print(Cimg.info)
+    Cimg.save(fp=filedialog.asksaveasfilename(title=f'Save As',initialfile=f'{Iimg.filename}',filetypes=[("PNG Files", "*.png"), ("All files", "*.*")]))
+    SWindow.destroy()
+    IPWindow.destroy()
+    
+    
+
+    
+def Build_Save_Window():
+    global SWindow, IPWindow, Image_Activated
+    SWindow.maxsize(400,200)
+    SWindow.minsize(400,200)
+    YBTN = tk.Button(master=SWindow,width=4,height=1, text='YES', command=lambda:Save_Image())
+    YBTN.place(x=125, y=100)
+    NBTN = tk.Button(master=SWindow,width=4,height=1, text='NO',command=lambda:(SWindow.destroy(), IPWindow.destroy(), reset_edits(), import_file()))
+    NBTN.place(x=250,y=100)
+    
 
 def BuildPreviewWindow(): #initial making of the image preview window
     global IPWindow, IPFrame, root, pReview, Image_Activated
