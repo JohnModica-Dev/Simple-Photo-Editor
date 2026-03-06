@@ -1,11 +1,11 @@
 import tkinter as tk
 from tkinter import filedialog
-from turtle import bgcolor, title, update
 from PIL import Image as I
+from PIL import ImageTk as ITK
 import os
 import math
 
-hIstory = 
+hIstory = []
 BASE_DIR = os.path.dirname(os.path.abspath(__file__)) #file directory to the program
 Iimg=Cimg=Pimg = 0 #image variables Import 
 #Iimg must be the import image and is in the format of Pillow
@@ -13,6 +13,8 @@ Iimg=Cimg=Pimg = 0 #image variables Import
 #Pimg is a copy of the Copied image and is in the format of TKinter
 IPWindow = IPFrame = 0 #Image preview window
 pReview = 0 #Variable to tell if the window is open or not, prob dont need it and can check through seeing if IPWindow is not equal to 0
+rotationAngle = 0
+Image_Activated = False
 
 def BuildMainWindow():
     oPtionsLabel = tk.Label(root,height=1,width=1,bg='dark red')
@@ -25,14 +27,24 @@ def BuildMainWindow():
     rotateBtn.place(x=100,y=100)
 
 def import_file(): #imports an image of the users choosing, to be edited.
-    global Iimg, Cimg
+    global Iimg, Cimg, Image_Activated
+    if Image_Activated:
+        ask_to_save()
+        return
     Iimg = I.open(fp=(filedialog.askopenfilename(title='Choose an Image',filetypes=[("PNG Files", "*.png"), ("All files", "*.*")])))
     print(Iimg)
     Cimg = Iimg
+    Cimg.convert('RGBA')
     BuildPreviewWindow()
     
+def ask_to_save():
+    global IPWindow, Image_Activated
+    IPWindow.destroy()
+    Image_Activated = False
+
 def BuildPreviewWindow(): #initial making of the image preview window
-    global IPWindow, IPFrame, root, pReview
+    global IPWindow, IPFrame, root, pReview, Image_Activated
+    Image_Activated = True
     pReview = 1
     IPWindow = tk.Toplevel(root,height=1000,width=1000)
     IPWindow.maxsize(width=1000, height=1000)
@@ -43,21 +55,17 @@ def BuildPreviewWindow(): #initial making of the image preview window
     IPWindow.mainloop()
     
 
-def UpdatePreviewWindow(): #updates the preview window when maing changes
+def UpdatePreviewWindow(): #updates the preview window when maing changes #imcomplete
     global IPWindow, IPFrame, Cimg, Pimg
     resizeTemp = 0
-    if (Cimg.width > 1000) or  (Cimg.height > 1000):
-        if Cimg.width > 1000:
-            resizeTemp = Cimg.resize(size=[Cimg.width//int(int(math.sqrt((Cimg.width**2) + (Cimg.height**2)))/1000),Cimg.height//int(int(math.sqrt((Cimg.width**2) + (Cimg.height**2)))/1000)])
-            resizeTemp.save(fp=os.path.join(BASE_DIR,f'Preview.png'))
-        else:
-            resizeTemp = Cimg.resize(size=[Cimg.width/(Cimg.height/1000),Cimg.height/(Cimg.height/1000)])
-            resizeTemp.save(fp=os.path.join(BASE_DIR,f'Preview.png'))
-    else:
-        Cimg.save(fp=os.path.join(BASE_DIR,f'Preview.png'))
-    Pimg = tk.PhotoImage(file=os.path.join(BASE_DIR,f'Preview.png'))
+    resizeTemp = Cimg
+    if (resizeTemp.height > 1000) or (resizeTemp.width > 1000):
+        resizeTemp = resizeTemp.resize([1000,1000])
+    Pimg = ITK.PhotoImage(image=resizeTemp)
+
+    
     ImagePreview = tk.Label(IPFrame,image=Pimg,height=IPFrame['height'],width=IPFrame['width'])
-    ImagePreview.place(x=0,y=0,width=1000,height=1000)
+    ImagePreview.place(x=IPFrame['width']//2,y=IPFrame['height']//2,anchor='center')
     
     
 def ResizeImg(Width, Height): #resizes the given image
@@ -66,8 +74,10 @@ def ResizeImg(Width, Height): #resizes the given image
     UpdatePreviewWindow()
     
 def RotateImg(degrees): #rotates teh given image
-    global Cimg
-    Cimg = Cimg.rotate(degrees)
+    global Cimg,Iimg, rotationAngle
+    rotationAngle = rotationAngle + degrees
+    Cimg = Iimg.convert('RGBA')
+    Cimg = Iimg.rotate(angle=rotationAngle,expand=True)
     UpdatePreviewWindow()
     
 
