@@ -91,12 +91,13 @@ def UpdatePreviewWindow(): #updates the preview window when maing changes #imcom
     global IPWindow, IPFrame, Cimg, Pimg
     resizeTemp = 0
     resizeTemp = Cimg
-    if (resizeTemp.height > 1000) or (resizeTemp.width > 1000):
-        resizeTemp = resizeTemp.resize([1000,1000])
+    resolution = resizeTemp.height/resizeTemp.width
+    if (resizeTemp.height > 700) or (resizeTemp.width > 700):
+        if(resizeTemp.height > resizeTemp.width):  # check FOR THE RESOLUTION OF THE IMAGE GENERATED, NOT THE IMAGE USED, FOR EXAMPLE, NOT THE 1920 BY 1080 IMAGE USED BUT BY THE IAMGE RANGE IT MAKES WHEN ROATED
+            
+               
     Pimg = ITK.PhotoImage(image=resizeTemp)
-
-    
-    ImagePreview = tk.Label(IPFrame,image=Pimg,height=IPFrame['height'],width=IPFrame['width'])
+    ImagePreview = tk.Label(IPFrame,image=Pimg,height=700,width=700)
     ImagePreview.place(x=IPFrame['width']//2,y=IPFrame['height']//2,anchor='center')
     
     
@@ -107,6 +108,8 @@ def ResizeImg(Width, Height): #resizes the given image
     
 def RotateImg(degrees): #rotates teh given image
     global Cimg,Iimg, rotationAngle
+    if rotationAngle == 360:
+        rotationAngle = 0
     rotationAngle = rotationAngle + degrees
     Cimg = Iimg.convert('RGBA')
     Cimg = Iimg.rotate(angle=rotationAngle,expand=True)
