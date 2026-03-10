@@ -92,12 +92,13 @@ def UpdatePreviewWindow(): #updates the preview window when maing changes #imcom
     resizeTemp = 0
     resizeTemp = Cimg
     resolution = resizeTemp.height/resizeTemp.width
-    if (resizeTemp.height > 700) or (resizeTemp.width > 700):
-        if(resizeTemp.height > resizeTemp.width):  # check FOR THE RESOLUTION OF THE IMAGE GENERATED, NOT THE IMAGE USED, FOR EXAMPLE, NOT THE 1920 BY 1080 IMAGE USED BUT BY THE IAMGE RANGE IT MAKES WHEN ROATED
-            
+    if resizeTemp.height > resizeTemp.width:
+        resizeTemp = resizeTemp.resize(size=[int(700/resolution),700])
+    if resizeTemp.width > resizeTemp.height:
+        resizeTemp = resizeTemp.resize(size=[700,int(700*resolution)])
                
     Pimg = ITK.PhotoImage(image=resizeTemp)
-    ImagePreview = tk.Label(IPFrame,image=Pimg,height=700,width=700)
+    ImagePreview = tk.Label(IPFrame,image=Pimg,height=700,width=700,bg='green')
     ImagePreview.place(x=IPFrame['width']//2,y=IPFrame['height']//2,anchor='center')
     
     
