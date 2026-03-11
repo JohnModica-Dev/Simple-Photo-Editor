@@ -18,12 +18,14 @@ rotationAngle = 0
 Image_Activated = False
 
 def BuildMainWindow():
-    oPtionsLabel = tk.Label(root,height=1,width=1,bg='dark red')
+    Oimage = tk.PhotoImage(file=os.path.join(BASE_DIR,'TextEditorTitle.png'))
+    oPtionsLabel = tk.Label(root,image=Oimage,border=0)
+    oPtionsLabel.image = Oimage
     oPtionsLabel.place(x=0,y=0)
     rEsizeLabel = tk.Label(root, height=10,width=50,bg='dark blue')
     rEsizeLabel.place(x=0,y=100)
-    importFileBTN = tk.Button(root, height=10,width=50,command=import_file)
-    importFileBTN.place(x=0,y=0)
+    importFileBTN = tk.Button(root, height=10,width=50,command=import_file,text='Import File')
+    importFileBTN.place(x=500,y=500)
     rotateBtn = tk.Button(root, height = 10, width = 50, command=lambda:RotateImg(10))
     rotateBtn.place(x=100,y=100)
 
@@ -32,11 +34,14 @@ def import_file(): #imports an image of the users choosing, to be edited.
     if Image_Activated:
         ask_to_save()
         return
-    Iimg = I.open(fp=(filedialog.askopenfilename(title='Choose an Image',filetypes=[("PNG Files", "*.png"), ("All files", "*.*")])))
-    print(Iimg)
-    Cimg = Iimg
-    Cimg.convert('RGBA')
-    BuildPreviewWindow()
+    try:
+        Iimg = I.open(fp=(filedialog.askopenfilename(title='Choose an Image',filetypes=[("PNG Files", "*.png"), ("All files", "*.*")])))
+        print(Iimg)
+        Cimg = Iimg
+        Cimg.convert('RGBA')
+        BuildPreviewWindow()
+    except:
+        return
     
 def reset_edits():
     global rotationAngle, hIstory, Image_Activated
@@ -122,6 +127,7 @@ root = tk.Tk(className=' Simple Photo Editor') #root window of the application
 root.geometry(newGeometry='1000x1000')
 root.minsize(1000,1000)
 root.maxsize(1000,1000)
+root.config(bg='#8eb897')
 print(root.attributes())
 BuildMainWindow()
 
