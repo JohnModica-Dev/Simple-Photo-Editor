@@ -19,15 +19,21 @@ Image_Activated = False
 
 def BuildMainWindow():
     Oimage = tk.PhotoImage(file=os.path.join(BASE_DIR,'TextEditorTitle.png'))
-    oPtionsLabel = tk.Label(root,image=Oimage,border=0)
+    oPtionsLabel = tk.Label(root,image=Oimage,borderwidth=0)
     oPtionsLabel.image = Oimage
     oPtionsLabel.place(x=0,y=0)
-    rEsizeLabel = tk.Label(root, height=10,width=50,bg='dark blue')
-    rEsizeLabel.place(x=0,y=100)
-    importFileBTN = tk.Button(root, height=10,width=50,command=import_file,text='Import File')
-    importFileBTN.place(x=500,y=500)
-    rotateBtn = tk.Button(root, height = 10, width = 50, command=lambda:RotateImg(10))
-    rotateBtn.place(x=100,y=100)
+    IBimg = tk.PhotoImage(file=os.path.join(BASE_DIR,'ImportPhoto.png'))
+    importFileBTN = tk.Button(root,command=import_file,text='Import File',image=IBimg,bg='#c3e8bd')
+    importFileBTN.image = IBimg
+    importFileBTN.place(x=50,y=250)
+    Rimg = tk.PhotoImage(file=os.path.join(BASE_DIR,'10.png'))
+    rotateBtn = tk.Button(root,image=Rimg, command=lambda:RotateImg(10),bg='#c3e8bd')
+    rotateBtn.image = Rimg
+    rotateBtn.place(x=800,y=250)
+    NRimg = tk.PhotoImage(file=os.path.join(BASE_DIR,'-10.png'))
+    NrotateBtn = tk.Button(root, image=NRimg,command=lambda:RotateImg(-10),bg='#c3e8bd')
+    NrotateBtn.image = NRimg
+    NrotateBtn.place(x=600,y=250)
 
 def import_file(): #imports an image of the users choosing, to be edited.
     global Iimg, Cimg, Image_Activated
