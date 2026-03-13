@@ -16,24 +16,53 @@ SWindow = 0
 pReview = 0 #Variable to tell if the window is open or not, prob dont need it and can check through seeing if IPWindow is not equal to 0
 rotationAngle = 0
 Image_Activated = False
+eOrder = []
+
 
 def BuildMainWindow():
-    Oimage = tk.PhotoImage(file=os.path.join(BASE_DIR,'TextEditorTitle.png'))
-    oPtionsLabel = tk.Label(root,image=Oimage,borderwidth=0)
-    oPtionsLabel.image = Oimage
+    global BASE_DIR
+    ImageNames = ['10.png','-10.png','DownArrow.png','UpArrow.png','ImportPhoto.png','TextEditorTitle.png']
+    uiImages = []
+    x = 0
+    while x != len(ImageNames):
+        uiImages.append(tk.PhotoImage(file=os.path.join(BASE_DIR,str(ImageNames[x]))))
+        x = x + 1
+    
+    oPtionsLabel = tk.Label(root,image=uiImages[5],borderwidth=0)
+    oPtionsLabel.image = uiImages[5]
     oPtionsLabel.place(x=0,y=0)
-    IBimg = tk.PhotoImage(file=os.path.join(BASE_DIR,'ImportPhoto.png'))
-    importFileBTN = tk.Button(root,command=import_file,text='Import File',image=IBimg,bg='#c3e8bd')
-    importFileBTN.image = IBimg
+
+    importFileBTN = tk.Button(root,command=import_file,text='Import File',image=uiImages[4],bg='#c3e8bd', activebackground='#c3e8bd')
+    importFileBTN.image = uiImages[4]
     importFileBTN.place(x=50,y=250)
-    Rimg = tk.PhotoImage(file=os.path.join(BASE_DIR,'10.png'))
-    rotateBtn = tk.Button(root,image=Rimg, command=lambda:RotateImg(10),bg='#c3e8bd')
-    rotateBtn.image = Rimg
+
+    rotateBtn = tk.Button(root,image=uiImages[0], command=lambda:RotateImg(10),bg='#c3e8bd',activebackground='#c3e8bd')
+    rotateBtn.image = uiImages[0]
     rotateBtn.place(x=800,y=250)
-    NRimg = tk.PhotoImage(file=os.path.join(BASE_DIR,'-10.png'))
-    NrotateBtn = tk.Button(root, image=NRimg,command=lambda:RotateImg(-10),bg='#c3e8bd')
-    NrotateBtn.image = NRimg
+
+    NrotateBtn = tk.Button(root, image=uiImages[1],command=lambda:RotateImg(-10),bg='#c3e8bd',activebackground='#c3e8bd')
+    NrotateBtn.image = uiImages[1]
     NrotateBtn.place(x=600,y=250)
+    
+    WidthUBtn = tk.Button(root,image=uiImages[3],bg='#c3e8bd',activebackground='#c3e8bd')
+    WidthUBtn.image = uiImages[3]
+    WidthUBtn.place(x=200,y=500)
+    
+    WidthDBtn = tk.Button(root,image=uiImages[2],bg='#c3e8bd',activebackground='#c3e8bd')
+    WidthDBtn.image = uiImages[2]
+    WidthDBtn.place(x=200,y=700)
+    
+    HeightDBtn = tk.Button(root,image=uiImages[2],bg='#c3e8bd',activebackground='#c3e8bd')
+    HeightDBtn.image = uiImages[2]
+    HeightDBtn.place(x=250,y=500)
+    
+    heightUBtn = tk.Button(root,image=uiImages[3],bg='#c3e8bd',activebackground='#c3e8bd')
+    heightUBtn.image = uiImages[3]
+    heightUBtn.place(x=250,y=700)
+    
+    SetSizeBtn = tk.Button(root,width=10,height=10,bg='#c3e8bd',activebackground='#c3e8bd')
+    SetSizeBtn.place(x=300,y=800)
+    
 
 def import_file(): #imports an image of the users choosing, to be edited.
     global Iimg, Cimg, Image_Activated
@@ -43,8 +72,8 @@ def import_file(): #imports an image of the users choosing, to be edited.
     try:
         Iimg = I.open(fp=(filedialog.askopenfilename(title='Choose an Image',filetypes=[("PNG Files", "*.png"), ("All files", "*.*")])))
         print(Iimg)
+        Iimg = Iimg.convert('RGBA')
         Cimg = Iimg
-        Cimg.convert('RGBA')
         BuildPreviewWindow()
     except:
         return
@@ -92,14 +121,16 @@ def BuildPreviewWindow(): #initial making of the image preview window
     IPWindow = tk.Toplevel(root,height=1000,width=1000)
     IPWindow.maxsize(width=1000, height=1000)
     IPWindow.minsize(width=1000,height=1000)
-    IPFrame = tk.Frame(IPWindow,width=1000,height=1000)
-    IPFrame.place(x=0,y=0)
     UpdatePreviewWindow()
     IPWindow.mainloop()
     
 
 def UpdatePreviewWindow(): #updates the preview window when maing changes #imcomplete
     global IPWindow, IPFrame, Cimg, Pimg
+    if IPFrame != 0:
+        IPFrame.destroy()
+    IPFrame = tk.Frame(IPWindow,width=1000,height=1000)
+    IPFrame.place(x=0,y=0)
     resizeTemp = 0
     resizeTemp = Cimg
     resolution = resizeTemp.height/resizeTemp.width
@@ -118,14 +149,30 @@ def ResizeImg(Width, Height): #resizes the given image
     Cimg = Cimg.resize([Width,Height])
     UpdatePreviewWindow()
     
-def RotateImg(degrees): #rotates teh given image
-    global Cimg,Iimg, rotationAngle
+def RotateImg(degrees): #rotates the given image
+    global Cimg,Iimg, rotationAngle,eOrder
     if rotationAngle == 360:
         rotationAngle = 0
     rotationAngle = rotationAngle + degrees
-    Cimg = Iimg.convert('RGBA')
+    eOrder.append('r')
+    eOrder.append(rotationAngle)
     Cimg = Iimg.rotate(angle=rotationAngle,expand=True)
     UpdatePreviewWindow()
+    
+def BuildImage():
+    global eOrder, Cimg, Iimg
+    x = 0 
+    Cimg = Iimg
+    while x != len(eOrder):
+        match eOrder[x]:
+            case 'r':
+                Cimg = Cimg.rotate(angle=eOrder[x+1],expand=True)
+                x = x + 2
+            case 'h':
+                return
+            case 'w':
+                return
+        
     
 
 
