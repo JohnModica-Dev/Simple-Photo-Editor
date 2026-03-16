@@ -11,7 +11,7 @@ Iimg=Cimg=Pimg = 0 #image variables Import
 #Iimg must be the import image and is in the format of Pillow
 #Cimg is a copy of the imported image and is in the formate of Pillow
 #Pimg is a copy of the Copied image and is in the format of TKinter
-IPWindow = IPFrame = 0 #Image preview window
+IPWindow = IPFrame = SetSizeWidth = SetSizeHeight = 0 #Image preview window
 SWindow = 0
 pReview = 0 #Variable to tell if the window is open or not, prob dont need it and can check through seeing if IPWindow is not equal to 0
 rotationAngle = 0
@@ -20,7 +20,7 @@ eOrder = []
 
 
 def BuildMainWindow():
-    global BASE_DIR
+    global BASE_DIR, SetSizeWidth, SetSizeHeight
     ImageNames = ['10.png','-10.png','DownArrow.png','UpArrow.png','ImportPhoto.png','TextEditorTitle.png']
     uiImages = []
     x = 0
@@ -44,25 +44,30 @@ def BuildMainWindow():
     NrotateBtn.image = uiImages[1]
     NrotateBtn.place(x=600,y=250)
     
-    WidthUBtn = tk.Button(root,image=uiImages[3],bg='#c3e8bd',activebackground='#c3e8bd')
+    WidthUBtn = tk.Button(root,image=uiImages[3],bg='#c3e8bd',activebackground='#c3e8bd',command=lambda: WidthUpDown(10))
     WidthUBtn.image = uiImages[3]
     WidthUBtn.place(x=200,y=500)
     
-    WidthDBtn = tk.Button(root,image=uiImages[2],bg='#c3e8bd',activebackground='#c3e8bd')
+    WidthDBtn = tk.Button(root,image=uiImages[2],bg='#c3e8bd',activebackground='#c3e8bd', command=lambda: WidthUpDown(-10))
     WidthDBtn.image = uiImages[2]
-    WidthDBtn.place(x=200,y=700)
+    WidthDBtn.place(x=300,y=500)
     
-    HeightDBtn = tk.Button(root,image=uiImages[2],bg='#c3e8bd',activebackground='#c3e8bd')
+    HeightDBtn = tk.Button(root,image=uiImages[2],bg='#c3e8bd',activebackground='#c3e8bd', command=lambda: HeightUPDown(-10))
     HeightDBtn.image = uiImages[2]
-    HeightDBtn.place(x=250,y=500)
+    HeightDBtn.place(x=300,y=700)
     
-    heightUBtn = tk.Button(root,image=uiImages[3],bg='#c3e8bd',activebackground='#c3e8bd')
+    heightUBtn = tk.Button(root,image=uiImages[3],bg='#c3e8bd',activebackground='#c3e8bd', command=lambda: HeightUPDown(10))
     heightUBtn.image = uiImages[3]
-    heightUBtn.place(x=250,y=700)
+    heightUBtn.place(x=200,y=700)
     
-    SetSizeBtn = tk.Button(root,width=10,height=10,bg='#c3e8bd',activebackground='#c3e8bd')
+    SetSizeBtn = tk.Button(root,width=10,height=10,bg='#c3e8bd',activebackground='#c3e8bd', command=lambda: ResizeImg())
     SetSizeBtn.place(x=300,y=800)
     
+    SetSizeWidth = tk.Text(root, width=10, height=10)
+    SetSizeWidth.place(x = 500, y = 800)
+    
+    SetSizeHeight = tk.Text(root, width=10, height=10)
+    SetSizeHeight.place(x = 500, y= 900)
 
 def import_file(): #imports an image of the users choosing, to be edited.
     global Iimg, Cimg, Image_Activated
@@ -132,6 +137,7 @@ def UpdatePreviewWindow(): #updates the preview window when maing changes #imcom
     IPFrame = tk.Frame(IPWindow,width=1000,height=1000)
     IPFrame.place(x=0,y=0)
     resizeTemp = 0
+    BuildImage()
     resizeTemp = Cimg
     resolution = resizeTemp.height/resizeTemp.width
     if resizeTemp.height > resizeTemp.width:
@@ -144,19 +150,73 @@ def UpdatePreviewWindow(): #updates the preview window when maing changes #imcom
     ImagePreview.place(x=IPFrame['width']//2,y=IPFrame['height']//2,anchor='center')
     
     
-def ResizeImg(Width, Height): #resizes the given image
-    global Cimg
-    Cimg = Cimg.resize([Width,Height])
+def ResizeImg(): #resizes the given image 
+    global Cimg, SetSizeWidth, SetSizeHeight, eOrder
+    RotateImg(0)
+    print(f'the starting width is {Cimg.width} and the starting height is {Cimg.height}')
+    try:
+        if int(SetSizeWidth.get(1.0,'end')) > Cimg.width:
+            WidthUpDown(int(SetSizeWidth.get(1.0,'end')) - Cimg.width)
+            print(f'Image upscaled the width to {Cimg.width}')
+        else:
+            WidthUpDown(int(SetSizeWidth.get(1.0,'end')) - Cimg.width)
+            print(f'Image upscaled the width to {Cimg.width}')
+        if int(SetSizeHeight.get(1.0,'end')) > Cimg.height:
+            HeightUPDown(int(SetSizeHeight.get(1.0,'end')) - Cimg.height)
+            print(f'Image upscaled the height to {Cimg.height}')
+        else:
+            HeightUPDown(int(SetSizeHeight.get(1.0,'end')) - Cimg.height)
+            print(f'Image upscaled the height to {Cimg.height}')
+    except:
+        print(f'I only expect numbers! I expect spaces and letters to throw an error! if you only put the numbers then it might think its a string instead of an integer')
+    print(int(SetSizeWidth.get(1.0, 'end')))
+    print(int(SetSizeHeight.get(1.0, 'end')))
     UpdatePreviewWindow()
     
+def WidthUpDown(Value):
+    global Cimg, eOrder, rotationAngle
+    try:
+        if eOrder[len(eOrder)-2] == 'w':
+            eOrder[len(eOrder)-1] = eOrder[len(eOrder)-1] + Value
+        else:
+            eOrder.append('w')
+            eOrder.append(Value)
+    except:
+        eOrder.append('w')
+        eOrder.append(Value)
+        print(f'No List yet')
+    rotationAngle = 0
+    UpdatePreviewWindow()
+    
+def HeightUPDown(Value):
+    global Cimg, eOrder, rotationAngle
+    try:
+        if eOrder[len(eOrder)-2] == 'h':
+            eOrder[len(eOrder)-1] = eOrder[len(eOrder)-1] + Value
+        else:
+            eOrder.append('h')
+            eOrder.append(Value)
+    except:
+        eOrder.append('h')
+        eOrder.append(Value)
+        print(f'No List yet')
+    rotationAngle = 0
+    UpdatePreviewWindow()
+
 def RotateImg(degrees): #rotates the given image
     global Cimg,Iimg, rotationAngle,eOrder
-    if rotationAngle == 360:
+    if (rotationAngle == 360) or (rotationAngle == -360):
         rotationAngle = 0
     rotationAngle = rotationAngle + degrees
+    try:
+        if eOrder[len(eOrder)-2] == 'r':
+            eOrder.pop(len(eOrder)-1)
+            eOrder.pop(len(eOrder)-1)
+    except:
+        print(f'No List yet')
     eOrder.append('r')
     eOrder.append(rotationAngle)
-    Cimg = Iimg.rotate(angle=rotationAngle,expand=True)
+    #Cimg = Iimg.rotate(angle=rotationAngle,expand=True)
     UpdatePreviewWindow()
     
 def BuildImage():
@@ -169,10 +229,12 @@ def BuildImage():
                 Cimg = Cimg.rotate(angle=eOrder[x+1],expand=True)
                 x = x + 2
             case 'h':
-                return
+                Cimg = Cimg.resize(size=[Cimg.width,Cimg.height+eOrder[x+1]])
+                x = x + 2
             case 'w':
-                return
-        
+                Cimg = Cimg.resize(size=[Cimg.width+eOrder[x+1],Cimg.height])
+                x = x + 2
+    print(eOrder)
     
 
 
