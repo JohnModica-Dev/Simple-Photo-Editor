@@ -13,7 +13,7 @@ Iimg=Cimg=Pimg = 0 #image variables Import
 #Pimg is a copy of the Copied image and is in the format of TKinter
 IPWindow = IPFrame = SetSizeWidth = SetSizeHeight = 0 #Image preview window
 SWindow = 0
-pReview = 0 #Variable to tell if the window is open or not, prob dont need it and can check through seeing if IPWindow is not equal to 0
+pReview = undo_Check = False #Variable to tell if the window is open or not, prob dont need it and can check through seeing if IPWindow is not equal to 0
 rotationAngle = 0
 Image_Activated = False
 eOrder = []
@@ -68,6 +68,12 @@ def BuildMainWindow():
     
     SetSizeHeight = tk.Text(root, width=10, height=10)
     SetSizeHeight.place(x = 500, y= 900)
+    
+    UnDoBtn = tk.Button(root, width=10, height=10, bg='#c3e8bd', activebackground='#c3e8bd', command=lambda: redo_or_undo('undo'))
+    UnDoBtn.place(x=900,y=600)
+    
+    ReDoBtn = tk.Button(root, width=10,height=10, bg='#c3e8bd', activebackground='#c3e8bd', comman=lambda: redo_or_undo('redo'))
+    ReDoBtn.place(x=900,y=900)
 
 def import_file(): #imports an image of the users choosing, to be edited.
     global Iimg, Cimg, Image_Activated
@@ -131,13 +137,14 @@ def BuildPreviewWindow(): #initial making of the image preview window
     
 
 def UpdatePreviewWindow(): #updates the preview window when maing changes #imcomplete
-    global IPWindow, IPFrame, Cimg, Pimg
+    global IPWindow, IPFrame, Cimg, Pimg, hIstory, eOrder
     if IPFrame != 0:
         IPFrame.destroy()
     IPFrame = tk.Frame(IPWindow,width=1000,height=1000)
     IPFrame.place(x=0,y=0)
     resizeTemp = 0
     BuildImage()
+    
     resizeTemp = Cimg
     resolution = resizeTemp.height/resizeTemp.width
     if resizeTemp.height > resizeTemp.width:
@@ -171,6 +178,7 @@ def ResizeImg(): #resizes the given image
         print(f'I only expect numbers! I expect spaces and letters to throw an error! if you only put the numbers then it might think its a string instead of an integer')
     print(int(SetSizeWidth.get(1.0, 'end')))
     print(int(SetSizeHeight.get(1.0, 'end')))
+    reset_undo()
     UpdatePreviewWindow()
     
 def WidthUpDown(Value):
@@ -186,6 +194,7 @@ def WidthUpDown(Value):
         eOrder.append(Value)
         print(f'No List yet')
     rotationAngle = 0
+    reset_undo()
     UpdatePreviewWindow()
     
 def HeightUPDown(Value):
@@ -201,10 +210,11 @@ def HeightUPDown(Value):
         eOrder.append(Value)
         print(f'No List yet')
     rotationAngle = 0
+    reset_undo()
     UpdatePreviewWindow()
 
 def RotateImg(degrees): #rotates the given image
-    global Cimg,Iimg, rotationAngle,eOrder
+    global Cimg,Iimg, rotationAngle,eOrder, undo_Check
     if (rotationAngle == 360) or (rotationAngle == -360):
         rotationAngle = 0
     rotationAngle = rotationAngle + degrees
@@ -217,8 +227,34 @@ def RotateImg(degrees): #rotates the given image
     eOrder.append('r')
     eOrder.append(rotationAngle)
     #Cimg = Iimg.rotate(angle=rotationAngle,expand=True)
+    reset_undo()
     UpdatePreviewWindow()
     
+def reset_undo():
+    global hIstory, undo_Check
+    hIstory = []
+    undo_Check = False
+
+def redo_or_undo(Text):
+    global eOrder, hIstory, undo_Check
+    if len(eOrder) < 1:
+        return
+    if Text == 'undo':
+        hIstory.append(eOrder[len(eOrder)-2])
+        hIstory.append(eOrder[len(eOrder)-1])
+        eOrder.pop(len(eOrder)-1)
+        eOrder.pop(len(eOrder)-1)
+        undo_Check = True
+        UpdatePreviewWindow()
+    elif Text == 'redo':
+        if undo_Check == True:
+            eOrder.append(hIstory[len(hIstory)-2])
+            eOrder.append(hIstory[len(hIstory)-1])
+            hIstory.pop(len(hIstory)-1)
+            hIstory.pop(len(hIstory)-1)
+            UpdatePreviewWindow()
+            
+
 def BuildImage():
     global eOrder, Cimg, Iimg
     x = 0 
