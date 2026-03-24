@@ -3,7 +3,6 @@ from tkinter import filedialog
 from PIL import Image as I
 from PIL import ImageTk as ITK
 import os
-import math
 
 hIstory = []
 BASE_DIR = os.path.dirname(os.path.abspath(__file__)) #file directory to the program
@@ -73,27 +72,37 @@ def BuildMainWindow():
     
     UnDoBtn = tk.Button(root, bg='#c3e8bd', activebackground='#c3e8bd', command=lambda: redo_or_undo('undo'), image=uiImages[7])
     UnDoBtn.image = uiImages[7]
-    UnDoBtn.place(x=900,y=600)
+    UnDoBtn.place(x=600,y=600)
     
     ReDoBtn = tk.Button(root, bg='#c3e8bd', activebackground='#c3e8bd', command=lambda: redo_or_undo('redo'), image=uiImages[8])
     ReDoBtn.image = uiImages[8]
-    ReDoBtn.place(x=900,y=900)
+    ReDoBtn.place(x=600,y=750)
     
-    SaveBtn = tk.Button(root, bg='#c3e8bd', activebackground='#c3e8bd', image=uiImages[6])
+    SaveBtn = tk.Button(root, bg='#c3e8bd', activebackground='#c3e8bd', image=uiImages[6], command=lambda: Save_Image())
     SaveBtn.image = uiImages[6]
     SaveBtn.place(x=50, y=370)
 
 # import_file functioin allows the user to import a file and als allows a user to save an image before importing another file
 def import_file(): #imports an image of the users choosing, to be edited.
     global Iimg, Cimg, Image_Activated
+    fName = ''
     if Image_Activated:
         ask_to_save()
         return
     try:
         Iimg = I.open(fp=(filedialog.askopenfilename(title='Choose an Image',filetypes=[("PNG Files", "*.png"), ("All files", "*.*")])))
         print(Iimg)
-        Iimg = Iimg.convert('RGBA')
+        x = len(Iimg.filename) - 1
+        while x != 0: # Sets the Iimg file name from the source of the file, to the files actual name
+            if (Iimg.filename[x] == '/') or (Iimg.filename[x] == ':'):
+                Iimg.filename = fName
+                x = 0
+            else:
+                fName = f'{Iimg.filename[x]}{fName}'
+                x = x - 1
+
         Cimg = Iimg
+        Cimg = Cimg.convert('RGBA')
         BuildPreviewWindow()
     except:
         return
@@ -119,11 +128,30 @@ def ask_to_save():
     
 # Save_Image function actually saves the image that the user is working on.
 def Save_Image():
-    global Cimg, SWindow, IPWindow, Iimg
+    global Cimg, SWindow, IPWindow, Iimg, Image_Activated
+    if Image_Activated == False:
+        Build_Error_Window('You need to import an image first')
+        return
     print(Cimg.info)
     Cimg.save(fp=filedialog.asksaveasfilename(title=f'Save As',initialfile=f'{Iimg.filename}',filetypes=[("PNG Files", "*.png"), ("All files", "*.*")]))
     SWindow.destroy()
     IPWindow.destroy()
+    
+def Build_Error_Window(Message):
+    global SWindow
+    SWindow = tk.Toplevel(root,height=200, width=400)
+    SWindow.maxsize(width=400, height=200)
+    SWindow.minsize(width=400, height=200)
+    MSG = tk.Label(SWindow,text=f'{Message}')
+    MSG.place(x=125,y = 50)
+    BTN = tk.Button(master=SWindow,width=4,height=1, text='OK', command=lambda:(SWindow.destroy()))
+    BTN.place(x=200, y=100)
+    SWindow.focus_force()
+    SWindow.transient(root)
+    SWindow.grab_set()
+    SWindow.wait_window(window=SWindow)
+    
+    
     
     
 # Build_Save_Window function builds the save window that asks the user to save their work before importing another image.
@@ -173,7 +201,10 @@ def UpdatePreviewWindow(): #updates the preview window when maing changes #imcom
     
 # The ResizeImg function is used to resize the image to a certain width and certain height that the user wants to put it as.
 def ResizeImg(): #resizes the given image 
-    global Cimg, SetSizeWidth, SetSizeHeight, eOrder
+    global Cimg, SetSizeWidth, SetSizeHeight, eOrder, Image_Activated
+    if Image_Activated == False:
+        Build_Error_Window('You need to import an image first')
+        return
     RotateImg(0)
     print(f'the starting width is {Cimg.width} and the starting height is {Cimg.height}')
     try:
@@ -200,7 +231,10 @@ def ResizeImg(): #resizes the given image
 # the user wanted to add 10 to width, then add another 70 right after, its a addition of 80 to the width instead of the 10 and then the 70, this allows for further image disruption
 # to be avoided.
 def WidthUpDown(Value):
-    global Cimg, eOrder, rotationAngle
+    global Cimg, eOrder, rotationAngle, Image_Activated
+    if Image_Activated == False:
+        Build_Error_Window('You need to import an image first')
+        return
     try:
         if eOrder[len(eOrder)-2] == 'w':
             eOrder[len(eOrder)-1] = eOrder[len(eOrder)-1] + Value
@@ -219,7 +253,10 @@ def WidthUpDown(Value):
 # the user wanted to add 10 to width, then add another 70 right after, its a addition of 80 to the width instead of the 10 and then the 70, this allows for further image disruption
 # to be avoided.
 def HeightUPDown(Value):
-    global Cimg, eOrder, rotationAngle
+    global Cimg, eOrder, rotationAngle, Image_Activated
+    if Image_Activated == False:
+        Build_Error_Window('You need to import an image first')
+        return
     try:
         if eOrder[len(eOrder)-2] == 'h':
             eOrder[len(eOrder)-1] = eOrder[len(eOrder)-1] + Value
@@ -237,7 +274,10 @@ def HeightUPDown(Value):
 # RotateImg function makes sure to add the degrees of rotation to the image that the user requests. instead of rotating the image in certain degrees and then stopping, it makes 
 # sure to add the degrees together to further prevent image clarity disruption. For example, instead of a 10 degreee turn, then another 10 degree turn, its now a 20 degree turn
 def RotateImg(degrees): #rotates the given image
-    global Cimg,Iimg, rotationAngle,eOrder, undo_Check
+    global Cimg,Iimg, rotationAngle,eOrder, undo_Check, Image_Activated
+    if Image_Activated == False:
+        Build_Error_Window('You need to import an image first')
+        return
     if (rotationAngle == 360) or (rotationAngle == -360):
         rotationAngle = 0
     rotationAngle = rotationAngle + degrees
@@ -256,7 +296,10 @@ def RotateImg(degrees): #rotates the given image
 
 # reset_undo function makes sure to clear the history (hIstory) and sets the undo flag (undo_Check) to false
 def reset_undo():
-    global hIstory, undo_Check
+    global hIstory, undo_Check, Image_Activated
+    if Image_Activated == False:
+        Build_Error_Window('You need to import an image first')
+        return
     hIstory = []
     undo_Check = False
 
@@ -268,7 +311,10 @@ def reset_undo():
 # makes sure to add the last added edit from undo to the editing order and then deletes that form the History, this allows for the editing order to add back what the user tried to 
 # delete, If the undo flag is not True, then the funtion exits.
 def redo_or_undo(Text):
-    global eOrder, hIstory, undo_Check
+    global eOrder, hIstory, undo_Check, Image_Activated
+    if Image_Activated == False:
+        Build_Error_Window('You need to import an image first')
+        return
     if len(eOrder) < 1:
         if Text == 'undo':
             return
@@ -310,8 +356,9 @@ def BuildImage():
                 Cimg = Cimg.resize(size=[Cimg.width+eOrder[x+1],Cimg.height])
                 x = x + 2
     print(eOrder)
+   
     
-
+    
 
 root = tk.Tk(className=' Simple Photo Editor') #root window of the application
 root.geometry(newGeometry='1000x1000')
